@@ -2,51 +2,11 @@ import React, { useState, useEffect, ChangeEvent, FormEvent } from "react";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import { FormSection } from "./FormSection";
+import type { PlacementFormData } from "../types";
 
-type FormData = {
-  candidateName: string;
-  sstVivza: string;
-  location: string;
-  poCountTotal: number;
-  poCountAMD: string;
-  poCountGGR: string;
-  poCountLKO: string;
-  placementOfferID: string;
-  personalPhone: string;
-  email: string;
-  fullAddress: string;
-  jobType: string;
-  positionApplied: string;
-  jobLocation: string;
-  endClient: string;
-  vendorName: string;
-  vendorTitle: string;
-  vendorDirect: string;
-  vendorEmail: string;
-  rate: string;
-  signupDate: string;
-  training: string;
-  trainingDoneDate: string;
-  joiningDate: string;
-  marketingStart: string;
-  marketingEnd: string;
-  salesLeadBy: string;
-  salesPerson: string;
-  salesTeamLead: string;
-  salesManager: string;
-  supportBy: string;
-  interviewTeamLead: string;
-  interviewManager: string;
-  applicationBy: string;
-  recruiterName: string;
-  marketingTeamLead: string;
-  marketingManager: string;
-  agreementPercent: string;
-  agreementMonths: string;
-  remarks: string;
-};
 
 const fieldLabels: Record<string, string> = {
+  id: "ID",
   candidateName: "Candidate Name",
   sstVivza: "SST/Vivza",
   location: "Location",
@@ -90,7 +50,8 @@ const fieldLabels: Record<string, string> = {
 };
 
 const POForm: React.FC = () => {
-  const initialState: FormData = {
+  const initialState: PlacementFormData = {
+    id: "",
     candidateName: "",
     sstVivza: "",
     location: "",
@@ -133,10 +94,10 @@ const POForm: React.FC = () => {
     remarks: "",
   };
 
-  const [data, setData] = useState<FormData>({ ...initialState });
+  const [data, setData] = useState<PlacementFormData>({ ...initialState });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [showPopup, setShowPopup] = useState(false);
-  const [submittedData, setSubmittedData] = useState<FormData | null>(null);
+  const [submittedData, setSubmittedData] = useState<PlacementFormData | null>(null);
 
   const generatePOID = () => {
     const today = new Date();
@@ -148,7 +109,8 @@ const POForm: React.FC = () => {
   };
 
   useEffect(() => {
-    setData((d) => ({ ...d, placementOfferID: generatePOID() }));
+    const id = generatePOID();
+    setData((d) => ({ ...d, placementOfferID: id, id }));
   }, []);
 
   const formatCandidateName = (value: string) =>
@@ -229,7 +191,8 @@ const POForm: React.FC = () => {
       setSubmittedData(data);
       setShowPopup(true);
       localStorage.setItem("placementOfferForm", JSON.stringify(data));
-      setData({ ...initialState, placementOfferID: generatePOID() });
+      const id = generatePOID();
+      setData({ ...initialState, placementOfferID: id, id });
       setErrors({});
     }
   };
@@ -270,7 +233,7 @@ const POForm: React.FC = () => {
   // Custom input renderer
   const renderInput = (
     label: string,
-    name: keyof FormData,
+    name: keyof PlacementFormData,
     type = "text",
     isTextArea = false,
     options?: string[],
