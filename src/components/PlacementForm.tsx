@@ -352,9 +352,9 @@ const POForm: React.FC = () => {
             {renderInput("Sales Person", "salesPerson")}
             {renderInput("Sales Team Lead", "salesTeamLead")}
             {renderInput("Sales Manager", "salesManager")}
-            {renderInput("Support By", "supportBy")}
 
             <h4 className="font-semibold text-gray-200 mt-2">Interview Support</h4>
+            {renderInput("Support By", "supportBy")}
             {renderInput("Interview Team Lead", "interviewTeamLead")}
             {renderInput("Interview Manager", "interviewManager")}
 
