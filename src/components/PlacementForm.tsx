@@ -199,20 +199,24 @@ const POForm: React.FC = () => {
   };
 
   const copyTable = () => {
-    const table = document.querySelector(".popup-table");
+    const table = document.querySelector('.popup-table');
     if (!table) return;
-    const range = document.createRange();
-    range.selectNode(table);
-    const selection = window.getSelection();
-    selection?.removeAllRanges();
-    selection?.addRange(range);
-    try {
-      document.execCommand("copy");
-      alert("Table copied as a real table! You can paste it into Word or Google Docs.");
-    } catch {
-      alert("Failed to copy table!");
-    }
-    selection?.removeAllRanges();
+    const text = Array.from(table.querySelectorAll('tr'))
+      .map(tr =>
+        Array.from(tr.children)
+          .map(cell => (cell.textContent || '').trim())
+          .join('\t')
+      )
+      .join('\n');
+
+    navigator.clipboard
+      .writeText(text)
+      .then(() => {
+        alert('Table copied! You can paste it into Word or Google Docs.');
+      })
+      .catch(() => {
+        alert('Failed to copy table!');
+      });
   };
 
   const downloadPDF = () => {

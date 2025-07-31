@@ -92,70 +92,27 @@ export function DetailModal({
   );
 
   const copyTableFormat = () => {
-    const tempDiv = document.createElement('div');
-    
-    // Add GIF image if screening is done for assessment
+    let text = rows
+      .map(({ label, value }) => `${label}\t${value || '-'}`)
+      .join('\n');
+
     if (candidate.taskType === 'assessment' && candidate.screeningDone) {
-      const img = document.createElement('img');
-      img.src = 'https://media.tenor.com/yhAAYQqxbcgAAAAi/little-pills.gif';
-      img.alt = 'Screening Done';
-      img.style.width = '32px';
-      img.style.height = '32px';
-      img.style.marginBottom = '16px';
-      tempDiv.appendChild(img);
+      text = `Screening Done\n\n${text}`;
     }
 
-    const table = document.createElement('table');
-    table.style.borderCollapse = 'collapse';
-    table.style.width = 'auto';
-
-    rows.forEach(({ label, value }) => {
-      const tr = document.createElement('tr');
-      const td1 = document.createElement('td');
-      const td2 = document.createElement('td');
-
-      [td1, td2].forEach(td => {
-        td.style.border = '1px solid black';
-        td.style.padding = '8px';
-        td.style.whiteSpace = 'nowrap';
-        td.style.width = 'auto';
-      });
-
-      td1.style.fontWeight = 'bold';
-      td1.textContent = label;
-      td2.textContent = value || '-';
-
-      tr.appendChild(td1);
-      tr.appendChild(td2);
-      table.appendChild(tr);
-    });
-
-    // Add remarks as text after the table if they exist
     if (candidate.remarks) {
-      const remarksDiv = document.createElement('div');
-      remarksDiv.style.marginTop = '16px';
-      remarksDiv.innerHTML = `<strong>Remarks:</strong>\n${candidate.remarks}`;
-      tempDiv.appendChild(table);
-      tempDiv.appendChild(remarksDiv);
-    } else {
-      tempDiv.appendChild(table);
+      text += `\n\nRemarks:\n${candidate.remarks}`;
     }
 
-    document.body.appendChild(tempDiv);
-
-    const range = document.createRange();
-    range.selectNode(tempDiv);
-    const selection = window.getSelection();
-    if (selection) {
-      selection.removeAllRanges();
-      selection.addRange(range);
-      document.execCommand('copy');
-      selection.removeAllRanges();
-    }
-
-    document.body.removeChild(tempDiv);
-    setCopySuccess('table');
-    setTimeout(() => setCopySuccess(null), 2000);
+    navigator.clipboard
+      .writeText(text)
+      .then(() => {
+        setCopySuccess('table');
+        setTimeout(() => setCopySuccess(null), 2000);
+      })
+      .catch(() => {
+        /* noop */
+      });
   };
 
   const copySubjectFormat = () => {
