@@ -5,7 +5,7 @@ export type TaskType =
   | 'resumeUnderstanding'
   | 'resumeReview';
 
-export type TabId = 'new' | 'scheduled';
+export type TabId = 'new' | 'scheduled' | 'placement';
 
 export type ToastType = 'success' | 'error' | 'info' | 'warning';
 
