@@ -217,25 +217,22 @@ const POForm: React.FC = () => {
       (el as HTMLElement).removeAttribute('class');
       (el as HTMLElement).removeAttribute('style');
     });
-    const html = clone.outerHTML;
 
-    const blobInput: Record<string, Blob> = {
-      'text/plain': new Blob([text], { type: 'text/plain' }),
-      'text/html': new Blob([html], { type: 'text/html' }),
+    const listener = (e: ClipboardEvent) => {
+      e.preventDefault();
+      e.clipboardData?.setData('text/html', clone.outerHTML);
+      e.clipboardData?.setData('text/plain', text);
     };
 
-    const write = navigator.clipboard.write?.bind(navigator.clipboard);
+    document.addEventListener('copy', listener);
+    const successful = document.execCommand('copy');
+    document.removeEventListener('copy', listener);
 
-    (write
-      ? write([new ClipboardItem(blobInput)])
-      : navigator.clipboard.writeText(text)
-    )
-      .then(() => {
-        alert('Table copied! You can paste it into Word or Google Docs.');
-      })
-      .catch(() => {
-        alert('Failed to copy table!');
-      });
+    if (successful) {
+      alert('Table copied! You can paste it into Word or Google Docs.');
+    } else {
+      alert('Failed to copy table!');
+    }
   };
 
   const downloadPDF = () => {
