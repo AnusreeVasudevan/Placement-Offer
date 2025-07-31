@@ -199,18 +199,37 @@ const POForm: React.FC = () => {
   };
 
   const copyTable = () => {
-    const table = document.querySelector('.popup-table');
+    const table = document.querySelector('.popup-table') as HTMLTableElement | null;
     if (!table) return;
-    const text = Array.from(table.querySelectorAll('tr'))
-      .map(tr =>
-        Array.from(tr.children)
-          .map(cell => (cell.textContent || '').trim())
+
+    const rows = Array.from(table.querySelectorAll('tr'));
+
+    const text = rows
+      .map((row) =>
+        Array.from(row.cells)
+          .map((cell) => cell.textContent?.trim() || '')
           .join('\t')
       )
       .join('\n');
 
-    navigator.clipboard
-      .writeText(text)
+    const clone = table.cloneNode(true) as HTMLTableElement;
+    clone.querySelectorAll('*').forEach((el) => {
+      (el as HTMLElement).removeAttribute('class');
+      (el as HTMLElement).removeAttribute('style');
+    });
+    const html = clone.outerHTML;
+
+    const blobInput: Record<string, Blob> = {
+      'text/plain': new Blob([text], { type: 'text/plain' }),
+      'text/html': new Blob([html], { type: 'text/html' }),
+    };
+
+    const write = navigator.clipboard.write?.bind(navigator.clipboard);
+
+    (write
+      ? write([new ClipboardItem(blobInput)])
+      : navigator.clipboard.writeText(text)
+    )
       .then(() => {
         alert('Table copied! You can paste it into Word or Google Docs.');
       })
