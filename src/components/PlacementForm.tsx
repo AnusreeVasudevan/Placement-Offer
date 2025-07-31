@@ -164,10 +164,11 @@ const POForm: React.FC = () => {
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
-    let newErrors: Record<string, string> = {};
+    const newErrors: Record<string, string> = {};
 
     Object.keys(data).forEach((field) => {
-      const error = validateField(field, (data as any)[field]);
+      const key = field as keyof PlacementFormData;
+      const error = validateField(field, data[key] as string);
       if (error) newErrors[field] = error;
     });
 
@@ -240,14 +241,14 @@ const POForm: React.FC = () => {
     readOnly = false
   ) => (
     <div>
-      <label className="block text-sm font-medium text-gray-300 mb-1">{label}</label>
+      <label className="block text-xs font-medium text-gray-300 mb-1">{label}</label>
       {options ? (
         <select
           name={name}
           value={data[name]}
           onChange={handleChange}
           disabled={readOnly}
-          className={`w-full rounded-md bg-neutral-900 text-gray-100 border border-neutral-700 focus:border-accent-400 focus:ring-1 focus:ring-accent-400 p-2 ${readOnly ? "bg-neutral-800 cursor-not-allowed" : ""}`}
+          className={`block w-full rounded-lg border-0 px-3 py-2 text-sm text-white bg-gray-800 shadow-sm ring-1 ring-gray-600 placeholder:text-gray-400 focus:ring-2 focus:ring-emerald-500 transition-all duration-200 ${readOnly ? "bg-gray-700 cursor-not-allowed ring-gray-700" : ""}`}
         >
           <option value="">Select</option>
           {options.map((opt) => (
@@ -262,7 +263,7 @@ const POForm: React.FC = () => {
           value={data[name]}
           onChange={handleChange}
           readOnly={readOnly}
-          className={`w-full rounded-md bg-neutral-900 text-gray-100 border border-neutral-700 focus:border-accent-400 focus:ring-1 focus:ring-accent-400 p-2 ${readOnly ? "bg-neutral-800 cursor-not-allowed" : ""}`}
+          className={`block w-full rounded-lg border-0 px-3 py-2 text-sm text-white bg-gray-800 shadow-sm ring-1 ring-gray-600 placeholder:text-gray-400 focus:ring-2 focus:ring-emerald-500 transition-all duration-200 ${readOnly ? "bg-gray-700 cursor-not-allowed ring-gray-700" : ""}`}
         />
       ) : (
         <input
@@ -271,7 +272,7 @@ const POForm: React.FC = () => {
           value={data[name]}
           onChange={handleChange}
           readOnly={readOnly}
-          className={`w-full rounded-md bg-neutral-900 text-gray-100 border border-neutral-700 focus:border-accent-400 focus:ring-1 focus:ring-accent-400 p-2 ${readOnly ? "bg-neutral-800 cursor-not-allowed" : ""}`}
+          className={`block w-full rounded-lg border-0 px-3 py-2 text-sm text-white bg-gray-800 shadow-sm ring-1 ring-gray-600 placeholder:text-gray-400 focus:ring-2 focus:ring-emerald-500 transition-all duration-200 ${readOnly ? "bg-gray-700 cursor-not-allowed ring-gray-700" : ""}`}
         />
       )}
       {errors[name] && <span className="text-red-400 text-xs">{errors[name]}</span>}
@@ -279,11 +280,12 @@ const POForm: React.FC = () => {
   );
 
   return (
-    <div className="min-h-screen bg-neutral-900 p-8">
-      <div className="max-w-6xl mx-auto bg-neutral-800 p-6 rounded-xl shadow-lg">
-        <h1 className="text-2xl font-bold text-gray-100 mb-6">Placement Offer Submission Form</h1>
+    <div className="max-w-6xl mx-auto bg-gray-900 shadow-sm border border-gray-700/60 rounded-xl overflow-hidden">
+      <div className="bg-gradient-to-r from-gray-800 to-gray-700 shadow-lg px-6 py-4 border-b border-purple-500/20">
+        <h1 className="text-lg font-semibold text-white">Placement Offer Submission Form</h1>
+      </div>
 
-        <form onSubmit={handleSubmit} className="space-y-8">
+        <form onSubmit={handleSubmit} className="p-4 space-y-8">
           {/* Candidate */}
           <FormSection title="Candidate">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -374,28 +376,29 @@ const POForm: React.FC = () => {
             {renderInput("Remarks/Notes (max 500 chars)", "remarks", "text", true)}
           </FormSection>
 
-          <button
-            type="submit"
-            className="px-6 py-3 bg-gradient-to-r from-primary-400 to-accent-400 text-white rounded-lg font-medium hover:from-primary-500 hover:to-accent-500 transition"
-          >
-            Submit
-          </button>
+          <div className="pt-4 border-t border-gray-700">
+            <button
+              type="submit"
+              className="w-full flex justify-center items-center gap-2 rounded-lg bg-gradient-to-r from-[#000000] via-[#b41ff2] to-[#41b1e8] from-[0%] via-[65%] to-[100%] px-4 py-3 text-sm font-semibold text-white shadow-sm hover:from-[#191919] hover:via-[#a225d1] hover:to-[#3498c8] focus:outline-none focus:ring-2 focus:ring-[#41b1e8] focus:ring-offset-2 focus:ring-offset-gray-900 transition-all duration-200 hover:shadow-md"
+            >
+              Submit
+            </button>
+          </div>
         </form>
-      </div>
 
       {/* Popup */}
       {showPopup && submittedData && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-          <div className="bg-neutral-800 p-6 rounded-xl shadow-lg max-w-2xl w-full">
-            <h2 className="text-xl font-bold text-primary-200 mb-4">
+          <div className="bg-gray-900 p-6 rounded-xl shadow-lg max-w-2xl w-full">
+            <h2 className="text-xl font-bold text-white mb-4">
               {submittedData.candidateName || "Submitted Data"}
             </h2>
             <div className="overflow-auto max-h-80">
-              <table className="popup-table w-full border border-neutral-700">
+              <table className="popup-table w-full border border-gray-700">
                 <tbody>
                   {Object.entries(submittedData).map(([key, value]) => (
-                    <tr key={key} className="border-b border-neutral-700">
-                      <td className="p-2 font-medium bg-neutral-700 text-gray-100">{fieldLabels[key] || key}</td>
+                    <tr key={key} className="border-b border-gray-700">
+                      <td className="p-2 font-medium bg-gray-800 text-gray-100">{fieldLabels[key] || key}</td>
                       <td className="p-2 text-gray-200">{value || "N/A"}</td>
                     </tr>
                   ))}
@@ -405,7 +408,7 @@ const POForm: React.FC = () => {
             <div className="flex justify-end gap-3 mt-4">
               <button
                 onClick={() => setShowPopup(false)}
-                className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600"
+                className="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700"
               >
                 Close
               </button>
@@ -417,7 +420,7 @@ const POForm: React.FC = () => {
               </button>
               <button
                 onClick={downloadPDF}
-                className="px-4 py-2 bg-gradient-to-r from-primary-400 to-accent-400 text-white rounded hover:from-primary-500 hover:to-accent-500"
+                className="px-4 py-2 bg-gradient-to-r from-[#000000] via-[#b41ff2] to-[#41b1e8] from-[0%] via-[65%] to-[100%] text-white rounded hover:from-[#191919] hover:via-[#a225d1] hover:to-[#3498c8]"
               >
                 Download PDF
               </button>
