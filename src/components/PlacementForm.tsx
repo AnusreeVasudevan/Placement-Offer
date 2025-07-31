@@ -294,7 +294,6 @@ const POForm: React.FC = () => {
               {renderInput("Location", "location", "text", false, [
                 "Gurgaon",
                 "Ahmedabad",
-                "Noida",
                 "Lucknow",
               ])}
             </div>
