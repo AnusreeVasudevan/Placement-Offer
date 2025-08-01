@@ -244,41 +244,60 @@ const POForm: React.FC = () => {
   };
 
   const copyTable = async () => {
-  const table = document.querySelector('.popup-table') as HTMLTableElement | null;
-  if (!table) return;
+    const table = document.querySelector('.popup-table') as HTMLTableElement | null;
+    if (!table) return;
 
-  // Get plain text version
-  const rows = Array.from(table.querySelectorAll('tr'));
-  const text = rows
-    .map((row) =>
-      Array.from(row.cells)
-        .map((cell) => cell.textContent?.trim() || '')
-        .join('\t')
-    )
-    .join('\n');
+    // Get plain text version
+    const rows = Array.from(table.querySelectorAll('tr'));
+    const text = rows
+      .map((row) =>
+        Array.from(row.cells)
+          .map((cell) => {
+            const spans = cell.querySelectorAll('span');
+            if (spans.length > 0) {
+              return Array.from(spans)
+                .map((s) => s.textContent?.trim() || '')
+                .join('\n');
+            }
+            return cell.textContent?.trim() || '';
+          })
+          .join('\t')
+      )
+      .join('\n');
 
-  // Clone and strip styles/classes
-  const clone = table.cloneNode(true) as HTMLTableElement;
-  clone.querySelectorAll('*').forEach((el) => {
-    (el as HTMLElement).removeAttribute('class');
-    (el as HTMLElement).removeAttribute('style');
-  });
+    // Clone and strip styles/classes
+    const clone = table.cloneNode(true) as HTMLTableElement;
+    clone.querySelectorAll('*').forEach((el) => {
+      (el as HTMLElement).removeAttribute('class');
+      (el as HTMLElement).removeAttribute('style');
+    });
 
-  // Wrap in a full HTML document structure
-  const htmlContent = `
-    <html>
-      <head>
-        <meta charset="utf-8" />
-      </head>
-      <body>
-        <table border="1" style="border-collapse: collapse; width: 100%;">
-          ${clone.innerHTML
-            .replace(/<td>/g, '<td style="border: 1px solid #000; padding: 4px;">')
-            .replace(/<th>/g, '<th style="border: 1px solid #000; padding: 4px; background: #eee;">')}
-        </table>
-      </body>
-    </html>
-  `;
+    // Ensure stacked entries remain separated when pasted
+    clone.querySelectorAll('td').forEach((cell) => {
+      const spans = cell.querySelectorAll('span');
+      if (spans.length > 0) {
+        const lines = Array.from(spans)
+          .map((s) => s.textContent?.trim() || '')
+          .join('<br>');
+        cell.innerHTML = lines;
+      }
+    });
+
+    // Wrap in a full HTML document structure
+    const htmlContent = `
+      <html>
+        <head>
+          <meta charset="utf-8" />
+        </head>
+        <body>
+          <table border="1" style="border-collapse: collapse; width: 100%;">
+            ${clone.innerHTML
+              .replace(/<td>/g, '<td style="border: 1px solid #000; padding: 4px;">')
+              .replace(/<th>/g, '<th style="border: 1px solid #000; padding: 4px; background: #eee;">')}
+          </table>
+        </body>
+      </html>
+    `;
 
   try {
     await navigator.clipboard.write([
