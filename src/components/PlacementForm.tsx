@@ -198,42 +198,56 @@ const POForm: React.FC = () => {
     }
   };
 
-  const copyTable = () => {
-    const table = document.querySelector('.popup-table') as HTMLTableElement | null;
-    if (!table) return;
+  const copyTable = async () => {
+  const table = document.querySelector('.popup-table') as HTMLTableElement | null;
+  if (!table) return;
 
-    const rows = Array.from(table.querySelectorAll('tr'));
+  // Get plain text version
+  const rows = Array.from(table.querySelectorAll('tr'));
+  const text = rows
+    .map((row) =>
+      Array.from(row.cells)
+        .map((cell) => cell.textContent?.trim() || '')
+        .join('\t')
+    )
+    .join('\n');
 
-    const text = rows
-      .map((row) =>
-        Array.from(row.cells)
-          .map((cell) => cell.textContent?.trim() || '')
-          .join('\t')
-      )
-      .join('\n');
+  // Clone and strip styles/classes
+  const clone = table.cloneNode(true) as HTMLTableElement;
+  clone.querySelectorAll('*').forEach((el) => {
+    (el as HTMLElement).removeAttribute('class');
+    (el as HTMLElement).removeAttribute('style');
+  });
 
-    const clone = table.cloneNode(true) as HTMLTableElement;
-    clone.querySelectorAll('*').forEach((el) => {
-      (el as HTMLElement).removeAttribute('class');
-      (el as HTMLElement).removeAttribute('style');
-    });
+  // Wrap in a full HTML document structure
+  const htmlContent = `
+    <html>
+      <head>
+        <meta charset="utf-8" />
+      </head>
+      <body>
+        <table border="1" style="border-collapse: collapse; width: 100%;">
+          ${clone.innerHTML
+            .replace(/<td>/g, '<td style="border: 1px solid #000; padding: 4px;">')
+            .replace(/<th>/g, '<th style="border: 1px solid #000; padding: 4px; background: #eee;">')}
+        </table>
+      </body>
+    </html>
+  `;
 
-    const listener = (e: ClipboardEvent) => {
-      e.preventDefault();
-      e.clipboardData?.setData('text/html', clone.outerHTML);
-      e.clipboardData?.setData('text/plain', text);
-    };
+  try {
+    await navigator.clipboard.write([
+      new ClipboardItem({
+        'text/plain': new Blob([text], { type: 'text/plain' }),
+        'text/html': new Blob([htmlContent], { type: 'text/html' }),
+      }),
+    ]);
+    alert('Table copied! You can paste it into Word or Google Docs.');
+  } catch (err) {
+    alert('Failed to copy table: ' + (err as Error).message);
+  }
+};
 
-    document.addEventListener('copy', listener);
-    const successful = document.execCommand('copy');
-    document.removeEventListener('copy', listener);
-
-    if (successful) {
-      alert('Table copied! You can paste it into Word or Google Docs.');
-    } else {
-      alert('Failed to copy table!');
-    }
-  };
 
   const downloadPDF = () => {
     if (!submittedData) return;

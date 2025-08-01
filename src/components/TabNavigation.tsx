@@ -103,7 +103,7 @@ export function TabNavigation({ tabs, activeTab, onChange }: TabNavigationProps)
                       {tab.badge}
                     </span>
                   )}
-
+                  
                   {/* Active indicator glow effect */}
                   {isActive && (
                     <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-purple-500/5 to-blue-500/5 opacity-50" />
