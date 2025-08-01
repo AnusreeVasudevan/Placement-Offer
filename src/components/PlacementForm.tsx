@@ -272,7 +272,8 @@ const POForm: React.FC = () => {
     type = "text",
     isTextArea = false,
     options?: string[],
-    readOnly = false
+    readOnly = false,
+    extraClass = ""
   ) => (
     <div>
       <label className="block text-xs font-medium text-gray-300 mb-1">{label}</label>
@@ -282,7 +283,7 @@ const POForm: React.FC = () => {
           value={data[name]}
           onChange={handleChange}
           disabled={readOnly}
-          className={`block w-full rounded-lg border-0 px-3 py-2 text-sm text-white bg-gray-800 shadow-sm ring-1 ring-gray-600 placeholder:text-gray-400 focus:ring-2 focus:ring-emerald-500 transition-all duration-200 ${readOnly ? "bg-gray-700 cursor-not-allowed ring-gray-700" : ""}`}
+          className={`block w-full rounded-lg border-0 px-3 py-2 text-sm text-white bg-gray-800 shadow-sm ring-1 ring-gray-600 placeholder:text-gray-400 focus:ring-2 focus:ring-emerald-500 transition-all duration-200 ${readOnly ? "bg-gray-700 cursor-not-allowed ring-gray-700" : ""} ${extraClass}`}
         >
           <option value="">Select</option>
           {options.map((opt) => (
@@ -297,7 +298,7 @@ const POForm: React.FC = () => {
           value={data[name]}
           onChange={handleChange}
           readOnly={readOnly}
-          className={`block w-full rounded-lg border-0 px-3 py-2 text-sm text-white bg-gray-800 shadow-sm ring-1 ring-gray-600 placeholder:text-gray-400 focus:ring-2 focus:ring-emerald-500 transition-all duration-200 ${readOnly ? "bg-gray-700 cursor-not-allowed ring-gray-700" : ""}`}
+          className={`block w-full rounded-lg border-0 px-3 py-2 text-sm text-white bg-gray-800 shadow-sm ring-1 ring-gray-600 placeholder:text-gray-400 focus:ring-2 focus:ring-emerald-500 transition-all duration-200 ${readOnly ? "bg-gray-700 cursor-not-allowed ring-gray-700" : ""} ${extraClass}`}
         />
       ) : (
         <input
@@ -306,7 +307,7 @@ const POForm: React.FC = () => {
           value={data[name]}
           onChange={handleChange}
           readOnly={readOnly}
-          className={`block w-full rounded-lg border-0 px-3 py-2 text-sm text-white bg-gray-800 shadow-sm ring-1 ring-gray-600 placeholder:text-gray-400 focus:ring-2 focus:ring-emerald-500 transition-all duration-200 ${readOnly ? "bg-gray-700 cursor-not-allowed ring-gray-700" : ""}`}
+          className={`block w-full rounded-lg border-0 px-3 py-2 text-sm text-white bg-gray-800 shadow-sm ring-1 ring-gray-600 placeholder:text-gray-400 focus:ring-2 focus:ring-emerald-500 transition-all duration-200 ${readOnly ? "bg-gray-700 cursor-not-allowed ring-gray-700" : ""} ${extraClass}`}
         />
       )}
       {errors[name] && <span className="text-red-400 text-xs">{errors[name]}</span>}
@@ -337,9 +338,9 @@ const POForm: React.FC = () => {
           <FormSection title="PO Details">
             <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
               {renderInput("Total PO Count", "poCountTotal", "number", false, undefined, true)}
-              {renderInput("AMD", "poCountAMD", "number")}
-              {renderInput("GGR", "poCountGGR", "number")}
-              {renderInput("LKO", "poCountLKO", "number")}
+              {renderInput("AMD", "poCountAMD", "number", false, undefined, false, "no-spinner")}
+              {renderInput("GGR", "poCountGGR", "number", false, undefined, false, "no-spinner")}
+              {renderInput("LKO", "poCountLKO", "number", false, undefined, false, "no-spinner")}
               {renderInput("Placement Offer ID", "placementOfferID", "text", false, undefined, true)}
             </div>
           </FormSection>
