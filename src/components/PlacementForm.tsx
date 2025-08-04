@@ -49,6 +49,60 @@ const fieldLabels: Record<string, string> = {
   remarks: "Remarks",
 };
 
+const groupedSections: {
+  heading: string;
+  fields: { label: string; key: keyof PlacementFormData }[];
+}[] = [
+  {
+    heading: "Vendor Details",
+    fields: [
+      { label: "Name", key: "vendorName" },
+      { label: "Title", key: "vendorTitle" },
+      { label: "Direct", key: "vendorDirect" },
+      { label: "Email", key: "vendorEmail" },
+    ],
+  },
+  {
+    heading: "PO Count",
+    fields: [
+      { label: "Total", key: "poCountTotal" },
+      { label: "AMD", key: "poCountAMD" },
+      { label: "GGR", key: "poCountGGR" },
+      { label: "LKO", key: "poCountLKO" },
+    ],
+  },
+  {
+    heading: "Sales",
+    fields: [
+      { label: "Lead By", key: "salesLeadBy" },
+      { label: "Sales Person", key: "salesPerson" },
+      { label: "Team Lead", key: "salesTeamLead" },
+      { label: "Manager", key: "salesManager" },
+    ],
+  },
+  {
+    heading: "Interview Support",
+    fields: [
+      { label: "Support By", key: "supportBy" },
+      { label: "Team Lead", key: "interviewTeamLead" },
+      { label: "Manager", key: "interviewManager" },
+    ],
+  },
+  {
+    heading: "Marketing",
+    fields: [
+      { label: "Application By", key: "applicationBy" },
+      { label: "Recruiter Name", key: "recruiterName" },
+      { label: "Team Lead", key: "marketingTeamLead" },
+      { label: "Manager", key: "marketingManager" },
+    ],
+  },
+];
+
+const groupedKeys = new Set(
+  groupedSections.flatMap((g) => g.fields.map((f) => f.key))
+);
+
 const POForm: React.FC = () => {
   const initialState: PlacementFormData = {
     id: "",
@@ -314,6 +368,13 @@ const POForm: React.FC = () => {
     </div>
   );
 
+  const generalEntries =
+    submittedData
+      ? Object.entries(submittedData).filter(
+          ([key]) => !groupedKeys.has(key as keyof PlacementFormData)
+        )
+      : [];
+
   return (
     <div className="max-w-6xl mx-auto bg-gray-900 shadow-sm border border-gray-700/60 rounded-xl overflow-hidden">
       <div className="bg-gradient-to-r from-gray-800 to-gray-700 shadow-lg px-6 py-4 border-b border-purple-500/20">
@@ -430,10 +491,28 @@ const POForm: React.FC = () => {
             <div className="overflow-auto max-h-80">
               <table className="popup-table w-full border border-gray-700">
                 <tbody>
-                  {Object.entries(submittedData).map(([key, value]) => (
+                  {generalEntries.map(([key, value]) => (
                     <tr key={key} className="border-b border-gray-700">
-                      <td className="p-2 font-medium bg-gray-800 text-gray-100">{fieldLabels[key] || key}</td>
+                      <td className="p-2 font-medium bg-gray-800 text-gray-100">
+                        {fieldLabels[key] || key}
+                      </td>
                       <td className="p-2 text-gray-200">{value || "N/A"}</td>
+                    </tr>
+                  ))}
+                  {groupedSections.map((section) => (
+                    <tr key={section.heading} className="border-b border-gray-700">
+                      <td className="p-2 font-medium bg-gray-800 text-gray-100">
+                        {section.heading}
+                      </td>
+                      <td className="p-2 text-gray-200">
+                        <div className="flex flex-col">
+                          {section.fields.map((f) => (
+                            <span key={f.key}>
+                              {f.label} - {submittedData[f.key] || "N/A"}
+                            </span>
+                          ))}
+                        </div>
+                      </td>
                     </tr>
                   ))}
                 </tbody>
