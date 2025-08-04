@@ -7,7 +7,7 @@ import type { PlacementFormData } from "../types";
 
 const fieldLabels: Record<string, string> = {
   id: "ID",
-  candidateName: "Candidate Name",
+  candidateName: "Name of Candidate",
   sstVivza: "SST/Vivza",
   location: "Location",
   poCountTotal: "PO Count Total",
@@ -15,24 +15,24 @@ const fieldLabels: Record<string, string> = {
   poCountGGR: "PO Count GGR",
   poCountLKO: "PO Count LKO",
   placementOfferID: "Placement Offer ID",
-  personalPhone: "Personal Phone",
-  email: "Email",
+  personalPhone: "Personal Phone Number",
+  email: "Email ID",
   fullAddress: "Full Address",
-  jobType: "Job Type",
-  positionApplied: "Position Applied",
+  jobType: "Type of Job (W2 / C2C / FTE)",
+  positionApplied: "Position that Applied",
   jobLocation: "Job Location",
-  endClient: "End Client",
+  endClient: "Implementation/End Client",
   vendorName: "Vendor Name",
   vendorTitle: "Vendor Title",
   vendorDirect: "Vendor Direct",
   vendorEmail: "Vendor Email",
   rate: "Rate",
   signupDate: "Signup Date",
-  training: "Training",
-  trainingDoneDate: "Training Done Date",
+  training: "Training Yes/No",
+  trainingDoneDate: "When Training Done",
   joiningDate: "Joining Date",
-  marketingStart: "Marketing Start",
-  marketingEnd: "Marketing End",
+  marketingStart: "Marketing Start Date",
+  marketingEnd: "Marketing End Date",
   salesLeadBy: "Sales Lead By",
   salesPerson: "Sales Person",
   salesTeamLead: "Sales Team Lead",
@@ -63,13 +63,12 @@ const groupedSections: {
     ],
   },
   {
-    heading: "Vendor",
+    heading: "Vendor Details",
     fields: [
       { label: "Name", key: "vendorName" },
       { label: "Title", key: "vendorTitle" },
       { label: "Direct", key: "vendorDirect" },
       { label: "Email", key: "vendorEmail" },
-      { label: "Rate", key: "rate" },
     ],
   },
   {
@@ -99,10 +98,6 @@ const groupedSections: {
     ],
   },
 ];
-
-const groupedKeys = new Set(
-  groupedSections.flatMap((g) => g.fields.map((f) => f.key))
-);
 
 const POForm: React.FC = () => {
   const initialState: PlacementFormData = {
@@ -400,12 +395,39 @@ const POForm: React.FC = () => {
     </div>
   );
 
-  const generalEntries =
-    submittedData
-      ? Object.entries(submittedData).filter(
-          ([key]) => !groupedKeys.has(key as keyof PlacementFormData)
-        )
-      : [];
+  const sectionsByHeading = Object.fromEntries(
+    groupedSections.map((section) => [section.heading, section])
+  );
+
+  const tableOrder: (
+    | keyof PlacementFormData
+    | { group: string }
+    | { combined: (keyof PlacementFormData)[]; label: string }
+  )[] = [
+    "candidateName",
+    "sstVivza",
+    "location",
+    { group: "PO Count" },
+    "personalPhone",
+    "email",
+    "fullAddress",
+    "jobType",
+    "positionApplied",
+    "jobLocation",
+    "endClient",
+    { group: "Vendor Details" },
+    "rate",
+    "signupDate",
+    "training",
+    "trainingDoneDate",
+    { group: "Sales" },
+    { group: "Interview Support" },
+    { group: "Marketing" },
+    "marketingStart",
+    "marketingEnd",
+    "joiningDate",
+    { combined: ["agreementPercent", "agreementMonths"], label: "Agreement Percentage and Months" },
+  ];
 
   return (
     <div className="max-w-6xl mx-auto bg-gray-900 shadow-sm border border-gray-700/60 rounded-xl overflow-hidden">
@@ -523,30 +545,55 @@ const POForm: React.FC = () => {
             <div className="overflow-auto max-h-80">
               <table className="popup-table w-full border border-gray-700">
                 <tbody>
-                  {generalEntries.map(([key, value]) => (
-                    <tr key={key} className="border-b border-gray-700">
-                      <td className="p-2 font-medium bg-gray-800 text-gray-100">
-                        {fieldLabels[key] || key}
-                      </td>
-                      <td className="p-2 text-gray-200">{value || "N/A"}</td>
-                    </tr>
-                  ))}
-                  {groupedSections.map((section) => (
-                    <tr key={section.heading} className="border-b border-gray-700">
-                      <td className="p-2 font-medium bg-gray-800 text-gray-100">
-                        {section.heading}
-                      </td>
-                      <td className="p-2 text-gray-200">
-                        <div className="flex flex-col">
-                          {section.fields.map((f) => (
-                            <span key={f.key}>
-                              {f.label} - {submittedData[f.key] || "N/A"}
-                            </span>
-                          ))}
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
+                  {tableOrder.map((item) => {
+                    if (typeof item === "string") {
+                      const key = item as keyof PlacementFormData;
+                      return (
+                        <tr key={key} className="border-b border-gray-700">
+                          <td className="p-2 font-medium bg-gray-800 text-gray-100">
+                            {fieldLabels[key] || key}
+                          </td>
+                          <td className="p-2 text-gray-200">
+                            {submittedData[key] || "N/A"}
+                          </td>
+                        </tr>
+                      );
+                    }
+                    if ("group" in item) {
+                      const section = sectionsByHeading[item.group];
+                      return (
+                        <tr key={item.group} className="border-b border-gray-700">
+                          <td className="p-2 font-medium bg-gray-800 text-gray-100">
+                            {section.heading}
+                          </td>
+                          <td className="p-2 text-gray-200">
+                            <div className="flex flex-col">
+                              {section.fields.map((f) => (
+                                <span key={f.key}>
+                                  {f.label} - {submittedData[f.key] || "N/A"}
+                                </span>
+                              ))}
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    }
+                    if ("combined" in item) {
+                      return (
+                        <tr key={item.label} className="border-b border-gray-700">
+                          <td className="p-2 font-medium bg-gray-800 text-gray-100">
+                            {item.label}
+                          </td>
+                          <td className="p-2 text-gray-200">
+                            {item.combined
+                              .map((k) => submittedData[k] || "N/A")
+                              .join(" / ")}
+                          </td>
+                        </tr>
+                      );
+                    }
+                    return null;
+                  })}
                 </tbody>
               </table>
             </div>
