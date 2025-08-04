@@ -327,10 +327,12 @@ const POForm: React.FC = () => {
     if (!submittedData) return;
     const doc = new jsPDF();
     doc.text(submittedData.candidateName || "Submitted Data", 14, 15);
-    const tableData = Object.entries(submittedData).map(([key, value]) => [
-      fieldLabels[key] || key,
-      value || "N/A",
-    ]);
+
+    const excludeKeys = new Set(["placementOfferID", "id"]);
+    const tableData = Object.entries(submittedData)
+      .filter(([key]) => !excludeKeys.has(key))
+      .map(([key, value]) => [fieldLabels[key] || key, value || "N/A"]);
+
     autoTable(doc, {
       head: [["Field", "Value"]],
       body: tableData,
