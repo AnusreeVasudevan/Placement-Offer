@@ -247,8 +247,12 @@ const POForm: React.FC = () => {
     const table = document.querySelector('.popup-table') as HTMLTableElement | null;
     if (!table) return;
 
+    const excludeLabels = new Set(['Placement Offer ID', 'ID']);
+
     // Get plain text version
-    const rows = Array.from(table.querySelectorAll('tr'));
+    const rows = Array.from(table.querySelectorAll('tr')).filter(
+      (row) => !excludeLabels.has(row.cells[0]?.textContent?.trim() || '')
+    );
     const text = rows
       .map((row) =>
         Array.from(row.cells)
@@ -267,6 +271,12 @@ const POForm: React.FC = () => {
 
     // Clone and strip styles/classes
     const clone = table.cloneNode(true) as HTMLTableElement;
+    clone.querySelectorAll('tr').forEach((row) => {
+      const label = (row as HTMLTableRowElement).cells[0]?.textContent?.trim();
+      if (excludeLabels.has(label || '')) {
+        row.remove();
+      }
+    });
     clone.querySelectorAll('*').forEach((el) => {
       (el as HTMLElement).removeAttribute('class');
       (el as HTMLElement).removeAttribute('style');
