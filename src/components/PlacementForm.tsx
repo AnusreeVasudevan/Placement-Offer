@@ -63,6 +63,16 @@ const groupedSections: {
     ],
   },
   {
+    heading: "Vendor",
+    fields: [
+      { label: "Name", key: "vendorName" },
+      { label: "Title", key: "vendorTitle" },
+      { label: "Direct", key: "vendorDirect" },
+      { label: "Email", key: "vendorEmail" },
+      { label: "Rate", key: "rate" },
+    ],
+  },
+  {
     heading: "Sales",
     fields: [
       { label: "Lead By", key: "salesLeadBy" },
