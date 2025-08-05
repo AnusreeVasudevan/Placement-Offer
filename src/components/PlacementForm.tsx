@@ -169,47 +169,67 @@ const POForm: React.FC = () => {
       .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
       .join(" ");
 
-  const validateField = (name: string, value: string): string => {
+  const validateField = (name: string, value: string | number): string => {
     let error = "";
-    if (name === "candidateName" && !value.trim()) error = "Name is required.";
-    if (name === "sstVivza" && !value) error = "Please select SST or Vivza.";
-    if (name === "location" && !value) error = "Please select a location.";
-    if (["poCountAMD", "poCountGGR", "poCountLKO"].includes(name) && value && Number(value) < 0)
+    if (name === "candidateName" && typeof value === "string" && !value.trim())
+      error = "Name is required.";
+    if (name === "sstVivza" && typeof value === "string" && !value)
+      error = "Please select SST or Vivza.";
+    if (name === "location" && typeof value === "string" && !value)
+      error = "Please select a location.";
+    if (["poCountAMD", "poCountGGR", "poCountLKO"].includes(name) && value !== "" && Number(value) < 0)
       error = "PO count cannot be negative.";
-    if (name === "personalPhone") {
+    if (name === "personalPhone" && typeof value === "string") {
       if (value && (!/^\d*$/.test(value) || value.length > 10)) {
         error = "Phone must be numeric and max 10 digits.";
       } else if (value.length > 0 && value.length < 10) {
         error = "Phone number must be 10 digits.";
       }
     }
-    if (name === "email" && value && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value))
+    if (name === "email" && typeof value === "string" && value && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value))
       error = "Invalid email format.";
-    if (name === "vendorEmail" && value && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value))
+    if (name === "vendorEmail" && typeof value === "string" && value && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value))
       error = "Invalid vendor email format.";
-    if (name === "rate" && value && (isNaN(Number(value)) || Number(value) < 0))
+    if (name === "rate" && value !== "" && (Number.isNaN(Number(value)) || Number(value) < 0))
       error = "Rate must be a non-negative number.";
-    if (name === "agreementPercent" && value && (Number(value) < 0 || Number(value) > 100))
+    if (name === "agreementPercent" && value !== "" && (Number(value) < 0 || Number(value) > 100))
       error = "Agreement % must be between 0 and 100.";
-    if (name === "agreementMonths" && value && Number(value) < 0)
+    if (name === "agreementMonths" && value !== "" && Number(value) < 0)
       error = "Agreement months must be non-negative.";
     return error;
   };
 
-  const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+  const numericFields: (keyof PlacementFormData)[] = [
+    "poCountAMD",
+    "poCountGGR",
+    "poCountLKO",
+    "rate",
+    "agreementPercent",
+    "agreementMonths",
+  ];
+
+  const handleChange = (
+    e: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
+  ) => {
     const { name, value } = e.target;
-    const newValue = name === "candidateName" ? formatCandidateName(value) : value;
+    const key = name as keyof PlacementFormData;
+    const formattedValue =
+      key === "candidateName"
+        ? formatCandidateName(value)
+        : numericFields.includes(key)
+        ? (value === "" ? "" : Number(value))
+        : value;
 
     setData((prev) => {
-      const updated = { ...prev, [name]: newValue };
-      const amd = parseInt(updated.poCountAMD || "0", 10);
-      const ggr = parseInt(updated.poCountGGR || "0", 10);
-      const lko = parseInt(updated.poCountLKO || "0", 10);
+      const updated = { ...prev, [key]: formattedValue } as PlacementFormData;
+      const amd = Number(updated.poCountAMD || 0);
+      const ggr = Number(updated.poCountGGR || 0);
+      const lko = Number(updated.poCountLKO || 0);
       updated.poCountTotal = amd + ggr + lko;
       return updated;
     });
 
-    setErrors((prev) => ({ ...prev, [name]: validateField(name, newValue) }));
+    setErrors((prev) => ({ ...prev, [name]: validateField(name, formattedValue) }));
   };
 
   const handleSubmit = (e: FormEvent) => {
@@ -218,7 +238,7 @@ const POForm: React.FC = () => {
 
     Object.keys(data).forEach((field) => {
       const key = field as keyof PlacementFormData;
-      const error = validateField(field, data[key] as string);
+      const error = validateField(field, data[key]);
       if (error) newErrors[field] = error;
     });
 
@@ -481,7 +501,7 @@ const POForm: React.FC = () => {
             {renderInput("Vendor Title", "vendorTitle")}
             {renderInput("Vendor Direct", "vendorDirect")}
             {renderInput("Vendor Email", "vendorEmail")}
-            {renderInput("Rate", "rate")}
+            {renderInput("Rate", "rate", "number", false, undefined, false, "no-spinner")}
           </FormSection>
 
           {/* Dates & Status */}
@@ -516,8 +536,8 @@ const POForm: React.FC = () => {
 
           {/* Agreement */}
           <FormSection title="Agreement">
-            {renderInput("Agreement Percentage", "agreementPercent")}
-            {renderInput("Agreement Months", "agreementMonths")}
+            {renderInput("Agreement Percentage", "agreementPercent", "number", false, undefined, false, "no-spinner")}
+            {renderInput("Agreement Months", "agreementMonths", "number", false, undefined, false, "no-spinner")}
           </FormSection>
 
           {/* Misc */}
