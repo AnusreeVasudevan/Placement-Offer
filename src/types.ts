@@ -53,9 +53,9 @@ export interface PlacementFormData {
   sstVivza: string;
   location: string;
   poCountTotal: number;
-  poCountAMD: number | '';
-  poCountGGR: number | '';
-  poCountLKO: number | '';
+  poCountAMD: string;
+  poCountGGR: string;
+  poCountLKO: string;
   placementOfferID: string;
   personalPhone: string;
   email: string;
@@ -68,7 +68,7 @@ export interface PlacementFormData {
   vendorTitle: string;
   vendorDirect: string;
   vendorEmail: string;
-  rate: number | '';
+  rate: string;
   signupDate: string;
   training: string;
   trainingDoneDate: string;
@@ -86,8 +86,8 @@ export interface PlacementFormData {
   recruiterName: string;
   marketingTeamLead: string;
   marketingManager: string;
-  agreementPercent: number | '';
-  agreementMonths: number | '';
+  agreementPercent: string;
+  agreementMonths: string;
   remarks: string;
 }
 
