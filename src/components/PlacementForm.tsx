@@ -199,12 +199,27 @@ const POForm: React.FC = () => {
   const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     const newValue = name === "candidateName" ? formatCandidateName(value) : value;
+    const numericFields = new Set([
+      "poCountAMD",
+      "poCountGGR",
+      "poCountLKO",
+      "rate",
+      "agreementPercent",
+      "agreementMonths",
+    ]);
 
     setData((prev) => {
-      const updated = { ...prev, [name]: newValue };
-      const amd = parseInt(updated.poCountAMD || "0", 10);
-      const ggr = parseInt(updated.poCountGGR || "0", 10);
-      const lko = parseInt(updated.poCountLKO || "0", 10);
+      const updated: PlacementFormData = { ...prev };
+      const key = name as keyof PlacementFormData;
+      if (numericFields.has(name)) {
+        // Store numbers for numeric fields, allow empty string
+        updated[key] = (value === "" ? "" : Number(value)) as PlacementFormData[keyof PlacementFormData];
+      } else {
+        updated[key] = newValue as PlacementFormData[keyof PlacementFormData];
+      }
+      const amd = Number(updated.poCountAMD) || 0;
+      const ggr = Number(updated.poCountGGR) || 0;
+      const lko = Number(updated.poCountLKO) || 0;
       updated.poCountTotal = amd + ggr + lko;
       return updated;
     });
@@ -218,7 +233,8 @@ const POForm: React.FC = () => {
 
     Object.keys(data).forEach((field) => {
       const key = field as keyof PlacementFormData;
-      const error = validateField(field, data[key] as string);
+      const value = data[key];
+      const error = validateField(field, value === "" ? "" : String(value));
       if (error) newErrors[field] = error;
     });
 
@@ -336,7 +352,7 @@ const POForm: React.FC = () => {
     const excludeKeys = new Set(["placementOfferID", "id"]);
     const tableData = Object.entries(submittedData)
       .filter(([key]) => !excludeKeys.has(key))
-      .map(([key, value]) => [fieldLabels[key] || key, value || "N/A"]);
+      .map(([key, value]) => [fieldLabels[key] || key, value === "" ? "N/A" : value]);
 
     autoTable(doc, {
       head: [["Field", "Value"]],
@@ -554,7 +570,7 @@ const POForm: React.FC = () => {
                             {fieldLabels[key] || key}
                           </td>
                           <td className="p-2 text-gray-200">
-                            {submittedData[key] || "N/A"}
+                            {submittedData[key] === "" ? "N/A" : submittedData[key]}
                           </td>
                         </tr>
                       );
@@ -570,7 +586,7 @@ const POForm: React.FC = () => {
                             <div className="flex flex-col">
                               {section.fields.map((f) => (
                                 <span key={f.key}>
-                                  {f.label} - {submittedData[f.key] || "N/A"}
+                                  {f.label} - {submittedData[f.key] === "" ? "N/A" : submittedData[f.key]}
                                 </span>
                               ))}
                             </div>
@@ -586,7 +602,9 @@ const POForm: React.FC = () => {
                           </td>
                           <td className="p-2 text-gray-200">
                             {item.combined
-                              .map((k) => submittedData[k] || "N/A")
+                              .map((k) =>
+                                submittedData[k] === "" ? "N/A" : submittedData[k]
+                              )
                               .join(" / ")}
                           </td>
                         </tr>
