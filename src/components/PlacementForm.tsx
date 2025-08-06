@@ -1,8 +1,9 @@
-import React, { useState, useEffect, ChangeEvent, FormEvent } from "react";
+import React, { useState, useEffect, ChangeEvent, FormEvent, useRef } from "react";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import { FormSection } from "./FormSection";
 import type { PlacementFormData } from "../types";
+import { useToast } from "../hooks/useToast";
 
 
 const fieldLabels: Record<string, string> = {
@@ -99,7 +100,7 @@ const groupedSections: {
   },
 ];
 
-const POForm: React.FC = () => {
+const PlacementForm: React.FC = () => {
   const initialState: PlacementFormData = {
     id: "",
     candidateName: "",
@@ -148,18 +149,20 @@ const POForm: React.FC = () => {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [showPopup, setShowPopup] = useState(false);
   const [submittedData, setSubmittedData] = useState<PlacementFormData | null>(null);
+  const tableRef = useRef<HTMLTableElement>(null);
+  const { showToast, ToastContainer } = useToast();
 
-  const generatePOID = () => {
+  const generatePlacementOfferId = () => {
     const today = new Date();
     const yyyy = today.getFullYear();
     const mm = String(today.getMonth() + 1).padStart(2, "0");
     const dd = String(today.getDate()).padStart(2, "0");
-    const seq = Math.floor(100 + Math.random() * 900);
+    const seq = crypto.randomUUID().split("-")[0];
     return `PO-${yyyy}${mm}${dd}-${seq}`;
   };
 
   useEffect(() => {
-    const id = generatePOID();
+    const id = generatePlacementOfferId();
     setData((d) => ({ ...d, placementOfferID: id, id }));
   }, []);
 
@@ -262,15 +265,18 @@ const POForm: React.FC = () => {
       setSubmittedData(data);
       setShowPopup(true);
       localStorage.setItem("placementOfferForm", JSON.stringify(data));
-      const id = generatePOID();
+      const id = generatePlacementOfferId();
       setData({ ...initialState, placementOfferID: id, id });
       setErrors({});
     }
   };
 
   const copyTable = async () => {
-    const table = document.querySelector('.popup-table') as HTMLTableElement | null;
-    if (!table) return;
+    const table = tableRef.current;
+    if (!table) {
+      showToast("Table not found", "error");
+      return;
+    }
 
     const excludeLabels = new Set(['Placement Offer ID', 'ID']);
 
@@ -334,18 +340,18 @@ const POForm: React.FC = () => {
       </html>
     `;
 
-  try {
-    await navigator.clipboard.write([
-      new ClipboardItem({
-        'text/plain': new Blob([text], { type: 'text/plain' }),
-        'text/html': new Blob([htmlContent], { type: 'text/html' }),
-      }),
-    ]);
-    alert('Table copied! You can paste it into Word or Google Docs.');
-  } catch (err) {
-    alert('Failed to copy table: ' + (err as Error).message);
-  }
-};
+    try {
+      await navigator.clipboard.write([
+        new ClipboardItem({
+          'text/plain': new Blob([text], { type: 'text/plain' }),
+          'text/html': new Blob([htmlContent], { type: 'text/html' }),
+        }),
+      ]);
+      showToast('Table copied! You can paste it into Word or Google Docs.', 'success');
+    } catch (err) {
+      showToast('Failed to copy table: ' + (err as Error).message, 'error');
+    }
+  };
 
 
   const downloadPDF = () => {
@@ -563,7 +569,7 @@ const POForm: React.FC = () => {
               {submittedData.candidateName || "Submitted Data"}
             </h2>
             <div className="overflow-auto max-h-80">
-              <table className="popup-table w-full border border-gray-700">
+              <table ref={tableRef} className="popup-table w-full border border-gray-700">
                 <tbody>
                   {tableOrder.map((item) => {
                     if (typeof item === "string") {
@@ -640,8 +646,9 @@ const POForm: React.FC = () => {
           </div>
         </div>
       )}
+      <ToastContainer />
     </div>
   );
 };
 
-export default POForm;
+export default PlacementForm;
